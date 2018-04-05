@@ -1,3 +1,5 @@
 build/
 .gradle/
 mongodata/
+.idea/
+mongodb-examples.iml
