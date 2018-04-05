@@ -1,5 +1,8 @@
 package net.grydeske
 
+import com.mongodb.client.FindIterable
+import org.bson.Document
+
 class SampleApplication {
 
     PokemonService pokemonService
@@ -43,9 +46,21 @@ class SampleApplication {
     void getByNumer(Scanner sc) {
         println "Which number should we look for?"
         String number = sc.nextLine()
-        pokemonService.getByNumber(number).each {
-            println it
+        FindIterable iterable = pokemonService.getByNumber(number)
+
+        for(Document doc: iterable) {
+            show(doc)
         }
+    }
+    void show(Document pokemon){
+        println "${pokemon['Name']} - ${pokemon['Type1']}:"
+        for(String key: pokemon.keySet()){
+            if(key.equals("name") || key.equals("Type1"))
+                continue;
+            println "- ${key} ${pokemon[key]}"
+        }
+        println ""
+
     }
 
     static void printHeader(String text) {
