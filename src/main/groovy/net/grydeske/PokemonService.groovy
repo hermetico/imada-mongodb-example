@@ -83,10 +83,43 @@ class PokemonService {
         return getByKeyValue("Type1", type)
 
     }
+
+    FindIterable getByQuery(Document query){
+        return collection('pokemons').find(query)
+
+    }
+
     void addColumn(String key, int value){
+        // are equivalent
+        // query composition with: exists("Seen", false)
+        // and: new Document("Seen", new Document('$exists', false))
+
+        //collection('pokemons').updateMany(
+        //        exists("Seen", false),
+        //        set(key, value))
+
         collection('pokemons').updateMany(
-                exists("Seen", false),
-                set(key, value))
+                    new Document("Seen", new Document('$exists', false)),
+                    set(key, value))
+    }
+
+    FindIterable increaseFieldByNumber(String number, String field, Number amount){
+        collection('pokemons').updateOne(
+                eq("Number", number),
+                inc(field, amount))
+        // returns the updated element
+        return collection('pokemons').find(new Document("Number", number))
+
+    }
+
+    FindIterable getSeenMoreThan(int value){
+        Document query = new Document("Seen", new Document('$gt', value))
+        return getByQuery(query)
+    }
+
+    FindIterable getSeenLessThan(int value){
+        Document query = new Document("Seen", new Document('$lt', value))
+        return getByQuery(query)
     }
 
 }

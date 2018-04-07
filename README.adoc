@@ -48,7 +48,7 @@ You should find help in the documentation: http://mongodb.github.io/mongo-java-d
 *** *id* Asks which id of pokemon you will see. #42 is _Golbat_
 .[X] Make the output format of the id task display prettier, and not just a printline of a map type.
 .[X] Try to implement querying, so you can query by a type, and only gets pokemons of that type displayed.
-. Add a seen column to the pokemon, and add a method where you can increment the number of times you have seen the different pokemons.
+.[X] Add a seen column to the pokemon, and add a method where you can increment the number of times you have seen the different pokemons.
 . Implement querying where you get listed all pokemons you have seen less times than/more times that a supplied number.
 . Add a delete method where you can remove a pokemon from the dataset
 . Add information on where you have seen a pokemon, so you can get a list of all the places you have seen it

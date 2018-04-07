@@ -35,7 +35,13 @@ class SampleApplication {
                     break
                 case 'addSeenColumn':
                     addSeenColumn()
-                    break;
+                    break
+                case 'seenById':
+                    seenById(sc)
+                    break
+                case 'tests':
+                    tests()
+                    break
                 default:
                     println "Unknown input: ${line}"
                     showHelp()
@@ -48,12 +54,35 @@ class SampleApplication {
         pokemonService.closeClient();
     }
 
+    void tests(){
+        Iterable result;
+        println "Running all points of the README file "
+        println "Loading database"
+        pokemonService.setupData()
+        println "Done"
+        println ""
+        println "Adding Seen column"
+        pokemonService.addColumn("Seen", 0)
+        println "Increasing seen of pokemon number 42 by 2"
+        result = pokemonService.increaseFieldByNumber("42", "Seen", 2)
+        showDetailedOutput(result)
+        println "Querying pokemons seen more than 1"
+        result  = pokemonService.getSeenMoreThan(1)
+        println "Seen ${result.size()} pokemons more than 1"
+        println "Querying pokemons seen less than 1"
+        result  = pokemonService.getSeenLessThan(1)
+        println "Seen ${result.size()} pokemons less than 1"
+
+    }
     void showHelp(){
         println "These are the available commands:"
         println "load\n" +
                 "id\n" +
                 "scan\n" +
                 "type\n" +
+                "addSeenColumn\n" +
+                "seenById\n" +
+                "tests\n" +
                 "help"
     }
     void scanPokemon() {
@@ -102,6 +131,13 @@ class SampleApplication {
     void addSeenColumn(){
         pokemonService.addColumn("Seen", 0)
         println "Done"
+    }
+
+    void seenById(Scanner sc) {
+        println "Which number of pokemn have you seen?"
+        String number = sc.nextLine()
+        FindIterable iterable = pokemonService.increaseFieldByNumber(number, "Seen", 1)
+        showDetailedOutput(iterable)
     }
 
     static void printHeader(String text) {
