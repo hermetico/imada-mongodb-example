@@ -72,7 +72,18 @@ class SampleApplication {
         println "Querying pokemons seen less than 1"
         result  = pokemonService.getSeenLessThan(1)
         println "Seen ${result.size()} pokemons less than 1"
-
+        println "Deleting pokemon 42"
+        pokemonService.deleteByNumber(42)
+        println "Requesting pokemon 42, should return empty collection"
+        result = pokemonService.getByNumber(42)
+        assert(result.size() == 0) : "Should return 0 but query returned ${result.size()}"
+        println "Returned 0 as expected"
+        println "Inserting location Barcelona"
+        pokemonService.addLocation("Barcelona")
+        println "Inserting locations Odense, Valencia"
+        pokemonService.addLocations(["Odense", "Valencia"] as String[])
+        println "Scanning al locations"
+        showDetailedOutput(pokemonService.getAllLocations())
     }
     void showHelp(){
         println "These are the available commands:"
@@ -94,7 +105,7 @@ class SampleApplication {
 
     void getByNumer(Scanner sc) {
         println "Which number should we look for?"
-        String number = sc.nextLine()
+        int number = Integer.parseInt(sc.nextLine())
         FindIterable iterable = pokemonService.getByNumber(number)
         showDetailedOutput(iterable)
     }
