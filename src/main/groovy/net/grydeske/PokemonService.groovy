@@ -1,11 +1,12 @@
 package net.grydeske
 
 import com.mongodb.MongoClient
+import com.mongodb.client.FindIterable
 import com.mongodb.client.MongoCollection
 import com.mongodb.client.MongoDatabase
-import com.mongodb.client.model.Accumulators
-import com.mongodb.client.model.Aggregates
-import com.mongodb.client.model.Filters
+import static com.mongodb.client.model.Filters.*;
+import static com.mongodb.client.model.Projections.*;
+import com.mongodb.client.model.Sorts;
 import org.bson.Document
 
 class PokemonService {
@@ -67,6 +68,17 @@ class PokemonService {
 
     def getByNumber(String number) {
         collection('pokemons').find(new Document("Number", number))
+    }
+
+    FindIterable getByKeyValue(String key,  String value){
+        //Document query = new Document(key, value)
+        //return collection('pokemons').find(query);
+        return collection('pokemons').find(eq(key, value));
+    }
+
+    FindIterable getByType(String type){
+        return getByKeyValue("Type1", type)
+
     }
 
 }

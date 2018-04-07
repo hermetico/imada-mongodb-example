@@ -1,5 +1,6 @@
 package net.grydeske
 
+import com.mongodb.client.MongoCollection
 import com.mongodb.client.FindIterable
 import org.bson.Document
 
@@ -23,11 +24,19 @@ class SampleApplication {
                 case 'id':
                     getByNumer(sc)
                     break
+                case 'type':
+                    getByType(sc)
+                    break
                 case 'scan':
                     scanPokemon()
                     break
+                case'help':
+                    showHelp()
+                    break
                 default:
                     println "Unknown input: ${line}"
+                    showHelp()
+
             }
             line = sc.nextLine()
         }
@@ -36,6 +45,14 @@ class SampleApplication {
         pokemonService.closeClient();
     }
 
+    void showHelp(){
+        println "These are the available commands:"
+        println "load\n" +
+                "id\n" +
+                "scan\n" +
+                "type\n" +
+                "help"
+    }
     void scanPokemon() {
         printHeader('All Characters')
         pokemonService.allPokemon.each {
@@ -47,22 +64,37 @@ class SampleApplication {
         println "Which number should we look for?"
         String number = sc.nextLine()
         FindIterable iterable = pokemonService.getByNumber(number)
-
-        for(Document doc: iterable) {
-            show(doc)
-        }
+        showDetailedOutput(iterable)
     }
-    void show(Document pokemon){
-        println "${pokemon['Name']} - ${pokemon['Type1']}:"
+
+    void getByType(Scanner sc) {
+        println "Which type should we look for?"
+        String type = sc.nextLine()
+        FindIterable iterable = pokemonService.getByType(type)
+        showDetailedOutput(iterable)
+    }
+
+
+    void showDetailedInformation(Document pokemon){
+        println "${pokemon['Name']}:"
         for(String key: pokemon.keySet()){
-            if(key.equals("name") || key.equals("Type1"))
-                continue;
+            if(key.equals("name")) continue
             println "- ${key} ${pokemon[key]}"
         }
         println ""
 
     }
 
+    void showDetailedOutput(Iterable iterable){
+
+        if (iterable.any()){
+            for (Document doc : iterable) {
+                showDetailedInformation(doc)
+            }
+        }else{
+            println "The query did not return any output"
+        }
+    }
     static void printHeader(String text) {
         println ""
         println "*"*80
