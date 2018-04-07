@@ -1,10 +1,13 @@
 package net.grydeske
 
+import com.mongodb.BasicDBObject
+import com.mongodb.DBObject
 import com.mongodb.MongoClient
 import com.mongodb.client.FindIterable
 import com.mongodb.client.MongoCollection
 import com.mongodb.client.MongoDatabase
 import static com.mongodb.client.model.Filters.*;
+import static com.mongodb.client.model.Updates.*;
 import static com.mongodb.client.model.Projections.*;
 import com.mongodb.client.model.Sorts;
 import org.bson.Document
@@ -73,12 +76,17 @@ class PokemonService {
     FindIterable getByKeyValue(String key,  String value){
         //Document query = new Document(key, value)
         //return collection('pokemons').find(query);
-        return collection('pokemons').find(eq(key, value));
+        return collection('pokemons').find(eq(key, value))
     }
 
     FindIterable getByType(String type){
         return getByKeyValue("Type1", type)
 
+    }
+    void addColumn(String key, int value){
+        collection('pokemons').updateMany(
+                exists("Seen", false),
+                set(key, value))
     }
 
 }

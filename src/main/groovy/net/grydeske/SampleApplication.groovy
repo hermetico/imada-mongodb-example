@@ -30,9 +30,12 @@ class SampleApplication {
                 case 'scan':
                     scanPokemon()
                     break
-                case'help':
+                case 'help':
                     showHelp()
                     break
+                case 'addSeenColumn':
+                    addSeenColumn()
+                    break;
                 default:
                     println "Unknown input: ${line}"
                     showHelp()
@@ -95,6 +98,12 @@ class SampleApplication {
             println "The query did not return any output"
         }
     }
+
+    void addSeenColumn(){
+        pokemonService.addColumn("Seen", 0)
+        println "Done"
+    }
+
     static void printHeader(String text) {
         println ""
         println "*"*80
