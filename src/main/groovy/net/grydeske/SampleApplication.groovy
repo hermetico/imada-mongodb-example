@@ -97,21 +97,19 @@ class SampleApplication {
         showDetailedOutput(pokemonService.getByNumber("41"))
         println "Showing pokemon 41 appearances"
         pokemonService.getPokemonSeenInLocation("40").each{println it}
-        /*println "Juan sees pokemon 40 at Barcelona"
+        println "Juan sees pokemon 40 at Barcelona"
         pokemonService.pokemonSeenAtBy("40", "Barcelona", "Juan")
         println "Juan sees pokemon 41 at Odense two times"
         pokemonService.pokemonSeenAtBy("41", "Odense", "Juan")
         pokemonService.pokemonSeenAtBy("41", "Odense", "Juan")
-        println "Showing all appearances"
-        showDetailedOutput(pokemonService.getAllAppearances())
         println "Peter sees pokemon 40 at Barcelona and Odense"
         pokemonService.pokemonSeenAtBy("40", "Odense", "Peter")
         pokemonService.pokemonSeenAtBy("40", "Barcelona", "Peter")
         println "Showing all locations again"
-        showDetailedOutput(pokemonService.getAllLocations())
-        println "Showing appearances of pokemon 40"
-        pokemonService.getPokemonAppearances("40").each{println it}
-        */
+        pokemonService.getAllLocations().each{println it}
+        println "Showing who how many of pokemon 40"
+        pokemonService.getWhoHowMany("40").each{println it}
+
 
     }
     void showHelp(){

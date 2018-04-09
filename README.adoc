@@ -52,9 +52,9 @@ You should find help in the documentation: http://mongodb.github.io/mongo-java-d
 . (OK) Implement querying where you get listed all pokemons you have seen less times than/more times that a supplied number.
 . (OK) Add a delete method where you can remove a pokemon from the dataset
 . (OK) Add information on where you have seen a pokemon, so you can get a list of all the places you have seen it
-** Make also an aggegate list, where you group by the location.
-. Extend the location with a username, so you can use the database for many users
-** And extract who have seen the pokemon how many times.
+** (OK) Make also an aggegate list, where you group by the location.
+. (OK) Extend the location with a username, so you can use the database for many users
+** (OK) And extract who have seen the pokemon how many times.
 
 TIP: There should be plenty of exercises - this is by design, so you don't run out of ideas to implement in the tutorial session.
 

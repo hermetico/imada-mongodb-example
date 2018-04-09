@@ -186,6 +186,20 @@ class PokemonService {
 
     }
 
+    void pokemonSeenAtBy(String pokemonNumber, String location, String user){
+        Document pokemon = getUniqueByNumber(pokemonNumber)
+        assert(pokemon != null) : "That pokemon number does not exist"
+
+        collection(LOCATIONS).insertOne(
+                new Document("Name", location)
+                        .append("pokemon_id", pokemon['_id'])
+                        .append("User", user)
+        )
+
+        increaseFieldByNumber(pokemonNumber, "Seen", 1)
+
+    }
+
     AggregateIterable getPokemonSeenInLocation(String pokemonNumber){
         Document pokemon = getUniqueByNumber(pokemonNumber)
         assert(pokemon != null) : "That pokemon number does not exist"
@@ -197,6 +211,25 @@ class PokemonService {
                         Aggregates.addFields(
                                 new Field("Name", '$_id')
                         ),
+                )
+        )
+
+        return response
+    }
+
+    AggregateIterable getWhoHowMany(String pokemonNumber){
+        Document pokemon = getUniqueByNumber(pokemonNumber)
+        assert(pokemon != null) : "That pokemon number does not exist"
+
+        AggregateIterable response = collection(LOCATIONS).aggregate(
+                Arrays.asList(
+                        Aggregates.match(eq("pokemon_id", pokemon['_id'])),
+                        Aggregates.group('$User', Accumulators.sum("Times", 1)),
+                        Aggregates.addFields(
+                                new Field("User", '$_id')
+                        ),
+                        Aggregates.match(not(eq("User", null)))
+
                 )
         )
 
