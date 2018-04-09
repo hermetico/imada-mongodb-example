@@ -86,13 +86,24 @@ class SampleApplication {
         pokemonService.addLocations(["Odense", "Valencia"] as String[])
         println "Scanning al locations"
         showDetailedOutput(pokemonService.getAllLocations())
-        println "Juan sees pokemon 40 at Barcelona"
+        println "Pokemon 40 seen at Barcelona 2 times, Odense 1"
+        pokemonService.pokemonSeenAt("40", "Barcelona")
+        pokemonService.pokemonSeenAt("40", "Barcelona")
+        pokemonService.pokemonSeenAt("40", "Odense")
+        showDetailedOutput(pokemonService.getByNumber("40"))
+        println "Pokemon 41 seen at Barcelona 1 times, Odense 1"
+        pokemonService.pokemonSeenAt("41", "Barcelona")
+        pokemonService.pokemonSeenAt("41", "Odense")
+        showDetailedOutput(pokemonService.getByNumber("41"))
+        println "Showing pokemon 41 appearances"
+        pokemonService.getPokemonSeenInLocation("40").each{println it}
+        /*println "Juan sees pokemon 40 at Barcelona"
         pokemonService.pokemonSeenAtBy("40", "Barcelona", "Juan")
         println "Juan sees pokemon 41 at Odense two times"
         pokemonService.pokemonSeenAtBy("41", "Odense", "Juan")
         pokemonService.pokemonSeenAtBy("41", "Odense", "Juan")
-        println "Showing all locations again"
-        showDetailedOutput(pokemonService.getAllLocations())
+        println "Showing all appearances"
+        showDetailedOutput(pokemonService.getAllAppearances())
         println "Peter sees pokemon 40 at Barcelona and Odense"
         pokemonService.pokemonSeenAtBy("40", "Odense", "Peter")
         pokemonService.pokemonSeenAtBy("40", "Barcelona", "Peter")
@@ -100,6 +111,7 @@ class SampleApplication {
         showDetailedOutput(pokemonService.getAllLocations())
         println "Showing appearances of pokemon 40"
         pokemonService.getPokemonAppearances("40").each{println it}
+        */
 
     }
     void showHelp(){

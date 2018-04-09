@@ -9,6 +9,7 @@ import com.mongodb.client.MongoCollection
 import com.mongodb.client.MongoDatabase
 import com.mongodb.client.model.Accumulators
 import com.mongodb.client.model.Aggregates
+import com.mongodb.client.model.Field
 import com.mongodb.client.model.Projections
 import jdk.nashorn.internal.runtime.FindProperty
 import org.bson.types.ObjectId
@@ -30,6 +31,7 @@ class PokemonService {
     def databaseName = 'pokemon'
     def POKEMONS = 'pokemons'
     def LOCATIONS = 'locations'
+    def APPEARANCES = 'appearances'
 
     MongoClient client() {
         mongoClient = mongoClient ?: new MongoClient(host, port)
@@ -52,6 +54,7 @@ class PokemonService {
         // restart the DB
         pokemons.drop()
         collection(LOCATIONS).drop()
+        collection(APPEARANCES).drop()
 
         if( !pokemons.count()) {
             def items = []
@@ -83,6 +86,14 @@ class PokemonService {
 
     def getAllPokemon() {
         collection(POKEMONS).find()
+    }
+
+    FindIterable getAllLocations(){
+        return collection(LOCATIONS).find()
+    }
+
+    FindIterable getAllAppearences(){
+        return collection(APPEARANCES).find()
     }
 
 
@@ -149,93 +160,43 @@ class PokemonService {
     Document getLocationByName(String name){
         return collection(LOCATIONS).find(eq("Name", name)).first()
     }
+
     void addLocation(String location){
-        int numLocations = collection(LOCATIONS).find().size()
         Document _new = new Document("Name", location)
-                .append("Number", numLocations)
         collection(LOCATIONS).insertOne(_new)
     }
 
     void addLocations(String[] locations){
         def items = []
-        int numLocations = collection(LOCATIONS).find().size()
-
         locations.each{
             items << new Document("Name", it)
-                    .append("Number", numLocations++)
-                    .append("Seen", Arrays.asList())
 
         }
-        //def data = items.collect { it as Document }
-
         collection(LOCATIONS).insertMany( items )
 
     }
 
-    FindIterable getAllLocations(){
-        return collection(LOCATIONS).find()
-    }
 
-
-    Document getAppearanceById(ObjectId pokemon_id, String location, String who){
-        return collection(LOCATIONS).find(
-                new Document("Name", location)
-                        .append("Seen.pokemon_id",pokemon_id)
-                        .append("Seen.Who", who)
-                ).first()
-    }
-
-
-    void addAppearance(ObjectId pokemon_id, String location, String who){
-        collection(LOCATIONS).updateOne(
-                new Document("Name", location),
-                new Document('$addToSet', new Document('Seen',
-                        new Document("pokemon_id", pokemon_id)
-                                .append("Who", who)
-                                .append("Times", 1)))
-        )
-
-    }
-
-
-    void increaseAppearance(ObjectId pokemon_id, String location, String who){
-        collection(LOCATIONS).updateOne(
-                new Document("Name", location)
-                        .append("Seen.pokemon_id", pokemon_id)
-                        .append("Seen.Who", who),
-                new Document('$inc', new Document('Seen.$.Times', 1)))
-    }
-
-    void pokemonSeenAtBy(String pokemonNumber, String place, String who){
+    void pokemonSeenAt(String pokemonNumber, String location){
         Document pokemon = getUniqueByNumber(pokemonNumber)
         assert(pokemon != null) : "That pokemon number does not exist"
-        Document location = getLocationByName(place)
-        assert(location != null) : "That location does not exist"
 
-
-
-        Document appearance = getAppearanceById(pokemon['_id'] as ObjectId, place, who)
-
-        if(appearance == null){
-            addAppearance(pokemon['_id'] as ObjectId, place, who)
-        }else{
-            increaseAppearance(pokemon['_id'] as ObjectId, place, who)
-        }
-
-        // increasing the times the pokemon has been seen
+        collection(LOCATIONS).insertOne(new Document("Name", location).append("pokemon_id", pokemon['_id']))
         increaseFieldByNumber(pokemonNumber, "Seen", 1)
 
     }
 
-
-    AggregateIterable getPokemonAppearances(String pokemonNumber){
+    AggregateIterable getPokemonSeenInLocation(String pokemonNumber){
         Document pokemon = getUniqueByNumber(pokemonNumber)
         assert(pokemon != null) : "That pokemon number does not exist"
-        println "Pokemon Id ${pokemon['_id']}"
+
         AggregateIterable response = collection(LOCATIONS).aggregate(
                 Arrays.asList(
-                        Aggregates.match(eq('pokemon_id',  pokemon['_id']))
-
+                        Aggregates.match(eq("pokemon_id", pokemon['_id'])),
+                        Aggregates.group('$Name', Accumulators.sum("Times", 1)),
+                        Aggregates.addFields(
+                                new Field("Name", '$_id')
+                        ),
                 )
         )
 
