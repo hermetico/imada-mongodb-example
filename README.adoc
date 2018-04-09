@@ -46,12 +46,12 @@ You should find help in the documentation: http://mongodb.github.io/mongo-java-d
 *** *load* Loads the Pokemon dataset
 *** *scan* Lists the pokemon with their name and type (Type1)
 *** *id* Asks which id of pokemon you will see. #42 is _Golbat_
-.[X] Make the output format of the id task display prettier, and not just a printline of a map type.
-.[X] Try to implement querying, so you can query by a type, and only gets pokemons of that type displayed.
-.[X] Add a seen column to the pokemon, and add a method where you can increment the number of times you have seen the different pokemons.
-.[X] Implement querying where you get listed all pokemons you have seen less times than/more times that a supplied number.
-.[X] Add a delete method where you can remove a pokemon from the dataset
-.[X] Add information on where you have seen a pokemon, so you can get a list of all the places you have seen it
+. (OK) Make the output format of the id task display prettier, and not just a printline of a map type.
+. (OK) Try to implement querying, so you can query by a type, and only gets pokemons of that type displayed.
+. (OK) Add a seen column to the pokemon, and add a method where you can increment the number of times you have seen the different pokemons.
+. (OK) Implement querying where you get listed all pokemons you have seen less times than/more times that a supplied number.
+. (OK) Add a delete method where you can remove a pokemon from the dataset
+. (OK) Add information on where you have seen a pokemon, so you can get a list of all the places you have seen it
 ** Make also an aggegate list, where you group by the location.
 . Extend the location with a username, so you can use the database for many users
 ** And extract who have seen the pokemon how many times.

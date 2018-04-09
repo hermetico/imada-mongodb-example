@@ -73,17 +73,35 @@ class SampleApplication {
         result  = pokemonService.getSeenLessThan(1)
         println "Seen ${result.size()} pokemons less than 1"
         println "Deleting pokemon 42"
-        pokemonService.deleteByNumber(42)
+        pokemonService.deleteByNumber("42")
         println "Requesting pokemon 42, should return empty collection"
-        result = pokemonService.getByNumber(42)
+        result = pokemonService.getByNumber("42")
         assert(result.size() == 0) : "Should return 0 but query returned ${result.size()}"
         println "Returned 0 as expected"
         println "Inserting location Barcelona"
         pokemonService.addLocation("Barcelona")
+        println "Scanning al locations"
+        showDetailedOutput(pokemonService.getAllLocations())
         println "Inserting locations Odense, Valencia"
         pokemonService.addLocations(["Odense", "Valencia"] as String[])
         println "Scanning al locations"
         showDetailedOutput(pokemonService.getAllLocations())
+        println "Juan sees pokemon 40 at Barcelona"
+        pokemonService.pokemonSeenAtBy("40", "Barcelona", "Juan")
+        println "Juan sees pokemon 41 at Odense two times"
+        pokemonService.pokemonSeenAtBy("41", "Odense", "Juan")
+        pokemonService.pokemonSeenAtBy("41", "Odense", "Juan")
+        println "Showing all appearances"
+        pokemonService.getAllAppearances().each{println it}
+        println "Peter sees pokemon 40 at Barcelona and Odense"
+        pokemonService.pokemonSeenAtBy("40", "Odense", "Peter")
+        pokemonService.pokemonSeenAtBy("40", "Barcelona", "Peter")
+        println "Showing all appearances"
+        //pokemonService.getAllAppearances().each{println it}
+        showDetailedOutput(pokemonService.getAllLocations())
+        println "Showing appearances of pokemon 40"
+        //pokemonService.getPokemonAppearances("40").each{println it}
+
     }
     void showHelp(){
         println "These are the available commands:"
@@ -98,14 +116,15 @@ class SampleApplication {
     }
     void scanPokemon() {
         printHeader('All Characters')
-        pokemonService.allPokemon.each {
+        pokemonService.allPokemon.each{
             println it
         }
+        //showDetailedOutput(pokemonService.allPokemon)
     }
 
     void getByNumer(Scanner sc) {
         println "Which number should we look for?"
-        int number = Integer.parseInt(sc.nextLine())
+        String number = sc.nextLine()
         FindIterable iterable = pokemonService.getByNumber(number)
         showDetailedOutput(iterable)
     }

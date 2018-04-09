@@ -3,10 +3,17 @@ package net.grydeske
 import com.mongodb.BasicDBObject
 import com.mongodb.DBObject
 import com.mongodb.MongoClient
+import com.mongodb.client.AggregateIterable
 import com.mongodb.client.FindIterable
 import com.mongodb.client.MongoCollection
 import com.mongodb.client.MongoDatabase
+import com.mongodb.client.model.Accumulators
+import com.mongodb.client.model.Aggregates
+import com.mongodb.client.model.Projections
 import jdk.nashorn.internal.runtime.FindProperty
+import org.bson.types.ObjectId
+
+import javax.xml.stream.Location
 
 import static com.mongodb.client.model.Filters.*;
 import static com.mongodb.client.model.Updates.*;
@@ -23,6 +30,7 @@ class PokemonService {
     def databaseName = 'pokemon'
     def POKEMONS = 'pokemons'
     def LOCATIONS = 'locations'
+    def APPEARANCES = 'appearances'
 
     MongoClient client() {
         mongoClient = mongoClient ?: new MongoClient(host, port)
@@ -42,6 +50,11 @@ class PokemonService {
 
     void setupData() {
         def pokemons = collection(POKEMONS)
+        // restart the DB
+        pokemons.drop()
+        collection(LOCATIONS).drop()
+        collection(APPEARANCES).drop()
+
         if( !pokemons.count()) {
             def items = []
             def first = true
@@ -67,14 +80,22 @@ class PokemonService {
 
             pokemons.insertMany( data )
         }
+
     }
 
     def getAllPokemon() {
         collection(POKEMONS).find()
     }
 
-    def getByNumber(int number) {
+    def getAllAppearances(){
+        collection(APPEARANCES).find()
+    }
+
+    def getByNumber(String number) {
         collection(POKEMONS).find(new Document("Number", number))
+    }
+    def getUniqueByNumber(String number) {
+        collection(POKEMONS).find(new Document("Number", number)).first()
     }
 
     FindIterable getByKeyValue(String key,  String value){
@@ -126,26 +147,154 @@ class PokemonService {
         return getByQuery(query)
     }
 
-    void deleteByNumber(int number){
+    void deleteByNumber(String number){
         collection('pokemons').deleteOne(eq("Number", number))
     }
 
+    Document getLocationByName(String name){
+        return collection(LOCATIONS).find(eq("Name", name)).first()
+    }
     void addLocation(String location){
-        collection(LOCATIONS).insertOne(new Document("Name", location))
+        int numLocations = collection(LOCATIONS).find().size()
+        Document _new = new Document("Name", location)
+                .append("Number", numLocations)
+        collection(LOCATIONS).insertOne(_new)
     }
 
     void addLocations(String[] locations){
         def items = []
+        int numLocations = collection(LOCATIONS).find().size()
+
         locations.each{
             items << new Document("Name", it)
-        }
-        def data = items.collect { it as Document }
+                    .append("Number", numLocations++)
+                    .append("Seen", Arrays.asList())
 
-        collection(LOCATIONS).insertMany( data )
+        }
+        //def data = items.collect { it as Document }
+
+        collection(LOCATIONS).insertMany( items )
 
     }
+
     FindIterable getAllLocations(){
         return collection(LOCATIONS).find()
+    }
+
+
+    Document _findAppearance(ObjectId what, ObjectId where, String who){
+        return collection(APPEARANCES).find(
+                new Document("pokemon_id", what)
+                        .append("location_id", where)
+                        .append("Who", who)
+        ).first()
+    }
+    Document findAppearance(ObjectId what, ObjectId where, String who){
+        return collection(APPEARANCES).find(
+                new Document("pokemon_id", what)
+                        .append("location_id", where)
+                        .append("Who", who)
+        ).first()
+    }
+
+    void addAppearance(ObjectId what, ObjectId where, String who){
+        Document appearance = new Document("pokemon_id", what)
+                .append("location_id", where)
+                .append("Who", who)
+                .append("Times", 1)
+        collection(APPEARANCES).insertOne(appearance)
+    }
+
+    void _addAppearance(ObjectId what, ObjectId where, String who){
+        Document appearance = new Document("pokemon_id", what)
+                .append("location_id", where)
+                .append("Who", who)
+                .append("Times", 1)
+        collection(APPEARANCES).insertOne(appearance)
+    }
+
+    void _increaseAppearance(ObjectId what, ObjectId where, String who){
+        Document appearance = new Document("pokemon_id", what)
+                .append("location_id", where)
+                .append("Who", who)
+        collection(APPEARANCES).updateOne(appearance, new Document('$inc', new Document("Times", 1)))
+    }
+
+    void increaseAppearance(ObjectId what, ObjectId where, String who){
+        Document appearance = new Document("pokemon_id", what)
+                .append("location_id", where)
+                .append("Who", who)
+        collection(APPEARANCES).updateOne(appearance, new Document('$inc', new Document("Times", 1)))
+    }
+
+    void _pokemonSeenAtBy(String pokemonNumber, String place, String who){
+        Document pokemon = getUniqueByNumber(pokemonNumber)
+        assert(pokemon != null) : "That pokemon number does not exist"
+        Document location = getLocationByName(place)
+        assert(location != null) : "That location does not exist"
+
+
+        Document appearance = findAppearance(pokemon['_id'] as ObjectId, location['_id'] as ObjectId, who)
+
+        if(appearance == null){
+            addAppearance(pokemon['_id']as ObjectId, location['_id']as ObjectId, who)
+        }else{
+            increaseAppearance(pokemon['_id']as ObjectId, location['_id']as ObjectId, who)
+        }
+        // increasing the times the pokemon has been seen
+        increaseFieldByNumber(pokemonNumber, "Seen", 1)
+
+    }
+
+    void pokemonSeenAtBy(String pokemonNumber, String place, String who){
+        Document pokemon = getUniqueByNumber(pokemonNumber)
+        assert(pokemon != null) : "That pokemon number does not exist"
+        Document location = getLocationByName(place)
+        assert(location != null) : "That location does not exist"
+
+        Document seen = new Document("pokemon_id", pokemon['_id']).append("Who", who)
+
+        Document appearance = collection(LOCATIONS).find(
+                new Document("Name", place).append("Seen", new Document('$elemMatch', seen))
+
+         ).first()
+
+        if(appearance == null){
+            println "appearance is null!"
+
+            collection(LOCATIONS).updateOne(new Document("Name", place),
+                    new Document('$push', new Document('Seen', seen.append("Times", 1)))
+            )
+
+        }else{
+            println "appearance is not null!"
+            collection(LOCATIONS).updateOne(
+                    new Document("Name", place)
+                            .append("Seen.pokemon_id", pokemon['_id'])
+                            .append("Seen.Who", who),
+                    new Document('$inc', new Document('Seen.$.Times', 1)))
+
+        }
+        println "now increasasing in the pokemon"
+        // increasing the times the pokemon has been seen
+        increaseFieldByNumber(pokemonNumber, "Seen", 1)
+
+    }
+
+
+    AggregateIterable getPokemonAppearances(String pokemonNumber){
+        Document pokemon = getUniqueByNumber(pokemonNumber)
+        assert(pokemon != null) : "That pokemon number does not exist"
+        AggregateIterable response = collection(APPEARANCES).aggregate(
+                Arrays.asList(
+                        // querying by id, grouping by location and counting how many appearances
+                        Aggregates.match(eq("pokemon_id", pokemon['_id'])),
+                        Aggregates.group('$location_id',
+                                Accumulators.sum("Times", 1))
+                )
+        )
+
+        return response
     }
 
 }
