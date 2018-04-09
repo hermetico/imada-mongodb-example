@@ -91,16 +91,15 @@ class SampleApplication {
         println "Juan sees pokemon 41 at Odense two times"
         pokemonService.pokemonSeenAtBy("41", "Odense", "Juan")
         pokemonService.pokemonSeenAtBy("41", "Odense", "Juan")
-        println "Showing all appearances"
-        pokemonService.getAllAppearances().each{println it}
+        println "Showing all locations again"
+        showDetailedOutput(pokemonService.getAllLocations())
         println "Peter sees pokemon 40 at Barcelona and Odense"
         pokemonService.pokemonSeenAtBy("40", "Odense", "Peter")
         pokemonService.pokemonSeenAtBy("40", "Barcelona", "Peter")
-        println "Showing all appearances"
-        //pokemonService.getAllAppearances().each{println it}
+        println "Showing all locations again"
         showDetailedOutput(pokemonService.getAllLocations())
         println "Showing appearances of pokemon 40"
-        //pokemonService.getPokemonAppearances("40").each{println it}
+        pokemonService.getPokemonAppearances("40").each{println it}
 
     }
     void showHelp(){
